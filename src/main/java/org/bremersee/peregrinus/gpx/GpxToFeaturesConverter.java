@@ -17,6 +17,7 @@
 package org.bremersee.peregrinus.gpx;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,7 +30,6 @@ import org.bremersee.peregrinus.model.Rte;
 import org.bremersee.peregrinus.model.RtePt;
 import org.bremersee.xml.JaxbContextBuilder;
 import org.locationtech.jts.geom.Coordinate;
-import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -37,7 +37,6 @@ import org.springframework.validation.annotation.Validated;
  *
  * @author Christian Bremer
  */
-@Component
 @Validated
 public class GpxToFeaturesConverter {
 
@@ -58,22 +57,19 @@ public class GpxToFeaturesConverter {
     rteTypeConverter = new RteTypeToRteConverter(jaxbContextBuilder);
   }
 
+  /**
+   * Convert gpx.
+   *
+   * @param gpx           the gpx
+   * @param removeRteWpts remove route waypoints
+   * @return the list
+   */
   @NotNull
   public List<Feature> convert(final Gpx gpx, final Boolean removeRteWpts) {
 
-    /*
-    MetadataType metadata = gpx.getMetadata();
-    PersonType person = metadata.getAuthor(); // name, email, link
-    BoundsType bounds = metadata.getBounds(); // min/max Lat/Lon
-    CopyrightType copyright = metadata.getCopyright(); // author, license, year
-    metadata.getDesc(); // description
-    metadata.getKeywords(); // keywords
-    metadata.getLinks(); // link list
-    metadata.getName(); // name
-    metadata.getTime(); // time: 2018-10-27T14:40:01Z
-    gpx.getCreator(); // creator="Garmin Desktop App"
-    gpx.getVersion(); //version="1.1"
-    */
+    if (gpx == null) {
+      return Collections.emptyList();
+    }
 
     final List<Feature> rtes = gpx.getRtes()
         .stream()
