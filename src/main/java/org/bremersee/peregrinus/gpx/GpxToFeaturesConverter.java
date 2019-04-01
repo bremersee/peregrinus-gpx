@@ -17,19 +17,21 @@
 package org.bremersee.peregrinus.gpx;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import org.bremersee.geojson.utils.GeometryUtils;
 import org.bremersee.gpx.model.Gpx;
 import org.bremersee.gpx.model.WptType;
 import org.bremersee.peregrinus.model.Feature;
+import org.bremersee.peregrinus.model.FeatureCollection;
 import org.bremersee.peregrinus.model.Rte;
 import org.bremersee.peregrinus.model.RtePt;
 import org.bremersee.xml.JaxbContextBuilder;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -65,10 +67,10 @@ public class GpxToFeaturesConverter {
    * @return the list
    */
   @NotNull
-  public List<Feature> convert(final Gpx gpx, final Boolean removeRteWpts) {
+  public FeatureCollection convert(final Gpx gpx, final Boolean removeRteWpts) {
 
     if (gpx == null) {
-      return Collections.emptyList();
+      return new FeatureCollection();
     }
 
     final List<Feature> rtes = gpx.getRtes()
@@ -92,7 +94,14 @@ public class GpxToFeaturesConverter {
 
     features.addAll(trks);
     features.addAll(rtes);
-    return features;
+
+    final double[] boundingBox = GeometryUtils.getBoundingBox(
+        features
+            .stream()
+            .map((Function<Feature, Geometry>) Feature::getGeometry)
+            .collect(Collectors.toList()));
+
+    return new FeatureCollection(features, boundingBox);
   }
 
   private boolean isExcluded(
